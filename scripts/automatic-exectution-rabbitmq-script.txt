@@ -1,0 +1,46 @@
+# Use the connection block to specify how to connect to the instance
+  connection {
+    type        = "ssh"
+    user        = "YOUR_SSH_USERNAME"
+    private_key = file("PATH_TO_YOUR_PRIVATE_KEY")
+    host        = self.network_interface[0].access_config[0].nat_ip
+  }
+
+  # Provisioners to configure RabbitMQ
+  provisioner "remote-exec" {
+    inline = [
+      "rabbitmqadmin declare exchange name=hw type=fanout durable=true",
+      "rabbitmqadmin declare exchange name=fmi type=fanout durable=true",
+      "rabbitmqadmin declare queue name=alarms durable=false",
+      "rabbitmqadmin declare queue name=durable durable=true",
+      "rabbitmqadmin declare binding source=hw destination=alarms",
+      "rabbitmqadmin declare binding source=fmi destination=durable"
+    ]
+  }
+}
+
+------- list
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin list queues
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin list exchanges
+
+--------- set up
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin declare exchange name=hw type=fanout durable=true
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin declare exchange name=fmi type=fanout durable=true
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin declare queue name=alarms durable=false
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin declare queue name=fmi_alarms durable=true
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin declare binding source=hw destination=alarms
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin declare binding source=fmi destination=fmi_alarms
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin declare binding source=hw destination_type=exchange destination=fmi
+
+--------- set up reference
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin declare exchange name=ref_ex type=fanout durable=true
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin declare queue name=ref_qu durable=false
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin declare binding source=ref_ex destination=ref_qu
+
+
+--------- produce/consume
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin publish exchange=hw payload="this is a test"
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin get queue=alarms ackmode=ack_requeue_false
+
+sudo docker exec -it e8473d707f61  /usr/local/bin/rabbitmqadmin delete queue name=alarms
+
