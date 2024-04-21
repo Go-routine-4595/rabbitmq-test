@@ -54,6 +54,7 @@ resource "google_compute_instance" "vm" {
     chmod +x /usr/local/bin/rabbitmqadmin
 
     sleep 10
+    /usr/local/bin/rabbitmqadmin declare exchange name=ref type=fanout durable=true
     /usr/local/bin/rabbitmqadmin declare exchange name=hw type=fanout durable=true
     /usr/local/bin/rabbitmqadmin declare exchange name=fmi type=fanout durable=true
     /usr/local/bin/rabbitmqadmin declare queue name=alarms durable=false
