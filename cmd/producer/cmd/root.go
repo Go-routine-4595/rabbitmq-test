@@ -48,10 +48,9 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.PersistentFlags().StringVarP(&amqpConnectionString, "amqp", "a", "", "AMQP connection string (required)")
-	rootCmd.PersistentFlags().StringVarP(&key, "key", "k", "", "Key for the operation")
-	rootCmd.PersistentFlags().StringVarP(&message, "message", "m", "", "Message to send (if not provided a random message will be sent)")
+	rootCmd.PersistentFlags().StringVarP(&key, "key", "k", "", "Key for routing messages (default \"\")")
+	rootCmd.PersistentFlags().StringVarP(&message, "message", "m", "", "Message to send (if not a random message will be sent)")
 	rootCmd.PersistentFlags().StringVarP(&exchange, "exchange", "e", "", "Exchange name to use (required)")
 	// Make these flags required
 	rootCmd.MarkPersistentFlagRequired("amqp")
